@@ -10,8 +10,8 @@ base_dir = "/opt/label-studio/files"
 
 det = ddddocr.DdddOcr(
     show_ad=False,
-    import_onnx_path="/home/wangjie/PycharmProjects/dddd_trainer/projects/piaoxingqiu/models/efficientnet_v2_s_3_v300_32_d05_lr01_pretrained_p_zh/piaoxingqiu_0.9333333333333333_212_1700_2024-04-08-18-31-14.onnx",
-    charsets_path="/home/wangjie/PycharmProjects/dddd_trainer/projects/piaoxingqiu/models/efficientnet_v2_s_3_v300_32_d05_lr01_pretrained_p_zh/charsets.json",
+    import_onnx_path="/home/wangjie/PycharmProjects/dddd_trainer/projects/piaoxingqiu/models/efficientnet_v2_s_3_v2009_32_d05_lr01_pretrained_merge/piaoxingqiu_0.984375_26_1500_2024-04-10-19-28-57.onnx",
+    charsets_path="/home/wangjie/PycharmProjects/dddd_trainer/projects/piaoxingqiu/models/efficientnet_v2_s_3_v2009_32_d05_lr01_pretrained_merge/charsets.json",
 )
 
 

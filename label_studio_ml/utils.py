@@ -8,6 +8,10 @@ from typing import List
 from label_studio_tools.core.utils.params import get_env
 from label_studio_tools.core.utils.io import get_local_path
 from label_studio_sdk.label_interface import LabelInterface
+import requests
+from io import BytesIO
+from urllib.parse import urlparse
+import os
 
 DATA_UNDEFINED_NAME = '$undefined$'
 
@@ -77,9 +81,26 @@ def get_image_local_path(url, image_cache_dir=None, project_dir=None, image_dir=
 
 
 def get_image_size(filepath):
-    img = Image.open(filepath)
-    img = ImageOps.exif_transpose(img)
-    return img.size
+    if is_url(filepath):
+        response = requests.get(filepath)
+        return Image.open(BytesIO(response.content)).size
+    
+    if is_file(filepath):
+        img = Image.open(filepath)
+        img = ImageOps.exif_transpose(img)
+        return img.size
+    
+    raise ValueError(f'Unknown image type: {filepath}')
+
+
+def is_url(s):
+    # Check if the string is a URL
+    parsed = urlparse(s)
+    return bool(parsed.scheme and parsed.netloc and parsed.scheme in ['http', 'https'])
+
+
+def is_file(s):
+    return os.path.exists(s)
 
 
 class InMemoryLRUDictCache:
