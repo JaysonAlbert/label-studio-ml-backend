@@ -1,9 +1,4 @@
-import os
 import logging
-import boto3
-import io
-import json
-import ddddocr
 import requests
 
 from typing import List, Dict
@@ -12,14 +7,9 @@ from label_studio_ml.model import LabelStudioMLBase
 from label_studio_ml.utils import (
     get_image_size,
     get_single_tag_keys,
-    DATA_UNDEFINED_NAME,
 )
-from label_studio_tools.core.utils.io import get_data_dir
-from botocore.exceptions import ClientError
-from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
-det = ddddocr.DdddOcr(det=True)
 
 
 class MMDetection(LabelStudioMLBase):
@@ -62,17 +52,17 @@ class MMDetection(LabelStudioMLBase):
     def predict_one_task(self, task: Dict):
         print(f">>> TASK: {task}")
         url = task["data"]["image"].split("d=")[-1]
-        bboxes = det.detection(requests.get(url).content)
         results = []
         all_scores = []
         img_width, img_height = get_image_size(url)
-
-        for bbox in bboxes:
-            bbox = list(bbox)
+        
+        predicts = self.get_predict(url)
+        for predict in predicts:
+            bbox = list(predict["bbox"])
+            output_label = predict["predict"]
+            score = predict["prob"]
             if not bbox:
                 continue
-
-            output_label, score = self.get_label(url)
 
             x, y, xmax, ymax = bbox[:4]
             results.append(
@@ -95,7 +85,7 @@ class MMDetection(LabelStudioMLBase):
         print(f">>> RESULTS: {results}")
         return {"result": results, "score": avg_score, "model_version": "mmdet"}
 
-    def get_label(self, image_path):
+    def get_predict(self, image_path):
         import requests
         import json
 
@@ -110,7 +100,4 @@ class MMDetection(LabelStudioMLBase):
         headers = {"Content-Type": "application/json"}
 
         response = requests.request("POST", url, headers=headers, data=payload)
-
-        predict = response.json()["body"]["predict"]
-        prob = response.json()["body"]["prob"]
-        return predict, prob
+        return response.json()["body"]
