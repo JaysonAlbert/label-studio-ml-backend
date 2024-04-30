@@ -1,5 +1,18 @@
 import logging
 import requests
+import time
+
+
+def time_function(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(f"Execution time of {func.__name__}: {end - start} seconds")
+        return result
+
+    return wrapper
+
 
 from typing import List, Dict
 
@@ -14,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class MMDetection(LabelStudioMLBase):
     """Object detector based on https://github.com/open-mmlab/mmdetection"""
-    
+
     def __init__(
         self,
         config_file=None,
@@ -33,29 +46,21 @@ class MMDetection(LabelStudioMLBase):
             self.labels_in_config,
         ) = get_single_tag_keys(self.parsed_label_config, "RectangleLabels", "Image")
 
-        
-    
-
+    @time_function
     def predict(self, tasks: List[Dict], **kwargs):
-        if len(tasks) > 1:
-            print(
-                "==> Only the first task will be processed to avoid ML backend overloading"
-            )
-            tasks = [tasks[0]]
-
         predictions = []
         for task in tasks:
             prediction = self.predict_one_task(task)
             predictions.append(prediction)
         return predictions
 
+    @time_function
     def predict_one_task(self, task: Dict):
-        print(f">>> TASK: {task}")
         url = task["data"]["image"].split("d=")[-1]
         results = []
         all_scores = []
         img_width, img_height = get_image_size(url)
-        
+
         predicts = self.get_predict(url)
         for predict in predicts:
             bbox = list(predict["bbox"])
